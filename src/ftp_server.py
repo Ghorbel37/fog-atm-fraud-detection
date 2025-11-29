@@ -70,3 +70,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Run with:
+# python.exe .\src\ftp_server.py 
