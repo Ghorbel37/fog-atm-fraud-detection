@@ -189,6 +189,7 @@ def main():
     
     max_display = config['dashboard']['max_transactions_display']
     transactions = db.get_recent_transactions(limit=max_display, node_id=filter_node_id)
+    transactions_all = db.get_all_transactions(node_id=filter_node_id)
     
     if not transactions:
         st.info("No transactions recorded yet. Waiting for data from fog nodes...")
@@ -217,37 +218,72 @@ def main():
         display_df = pd.DataFrame(display_data)
         st.dataframe(display_df, use_container_width=True, hide_index=True)
         
-        # Transaction volume chart
-        if len(transactions) > 0:
+        # Transaction volume chart (use full history)
+        if len(transactions_all) > 0:
             st.subheader("Transaction Volume Over Time")
-            
-            # Group by hour
+
+            tx_df = pd.DataFrame(transactions_all)
             tx_df['timestamp_dt'] = pd.to_datetime(tx_df['timestamp'])
-            tx_df['hour'] = tx_df['timestamp_dt'].dt.floor('H')
-            
-            volume_data = tx_df.groupby('hour').size().reset_index(name='count')
-            
+            tx_df = tx_df.sort_values('timestamp_dt')
+
+            # Determine the time range of data
+            time_span = tx_df['timestamp_dt'].max() - tx_df['timestamp_dt'].min()
+            total_minutes = time_span.total_seconds() / 60
+
+            # Smart bucketing based on time range
+            if total_minutes <= 60:           # Less than 1 hour → 1-minute buckets
+                freq = '1min'
+                label = 'per Minute'
+            elif total_minutes <= 6*60:       # Less than 6 hours → 5-minute buckets
+                freq = '5min'
+                label = 'per 5 Minutes'
+            elif total_minutes <= 24*60:      # Less than 1 day → 10-minute buckets
+                freq = '10min'
+                label = 'per 10 Minutes'
+            elif total_minutes <= 7*24*60:    # Less than 1 week → 30-minute buckets
+                freq = '30min'
+                label = 'per 30 Minutes'
+            else:
+                freq = '1H'                   # More than a week → hourly
+                label = 'per Hour'
+
+            # Group by dynamic time buckets
+            tx_df['time_bucket'] = tx_df['timestamp_dt'].dt.floor(freq)
+            volume_data = tx_df.groupby('time_bucket').size().reset_index(name='count')
+
+            # Nice title
+            title = f"Transaction Volume {label}"
+
             fig = px.line(
                 volume_data,
-                x='hour',
+                x='time_bucket',
                 y='count',
-                title='Transactions per Hour',
-                labels={'hour': 'Time', 'count': 'Transaction Count'}
+                title=title,
+                labels={'time_bucket': 'Time', 'count': 'Transactions'},
+                markers=True
             )
+            
+            # Improve readability
+            fig.update_layout(hovermode="x unified")
+            fig.update_traces(line=dict(width=2), marker=dict(size=6))
+
             st.plotly_chart(fig, use_container_width=True)
         
-        # Amount distribution
-        if len(transactions) > 5 and 'amount' in tx_df.columns:
+        # Amount distribution (use full history)
+        if len(transactions_all) > 5:
             st.subheader("Transaction Amount Distribution")
             
-            fig = px.histogram(
-                tx_df,
-                x='amount',
+            tx_all_df = pd.DataFrame(transactions_all)
+            
+            if 'amount' in tx_all_df.columns:
+                fig = px.histogram(
+                    tx_all_df,
+                    x='amount',
                 nbins=20,
-                title='Distribution of Transaction Amounts',
-                labels={'amount': 'Amount ($)', 'count': 'Frequency'}
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                    title='Distribution of Transaction Amounts',
+                    labels={'amount': 'Amount ($)', 'count': 'Frequency'}
+                )
+                st.plotly_chart(fig, use_container_width=True)
     
     
     st.markdown("---")
@@ -256,6 +292,7 @@ def main():
     st.header("🚨 Recent Fraud Detection Results")
     
     fraud_results = db.get_recent_fraud_results(limit=max_display, node_id=filter_node_id)
+    fraud_results_all = db.get_all_fraud_results(node_id=filter_node_id)
     
     if not fraud_results:
         st.info("No fraud detection results yet. Waiting for data from fog nodes...")
@@ -294,11 +331,14 @@ def main():
         styled_df = display_df.style.apply(highlight_fraud, axis=1)
         st.dataframe(styled_df, use_container_width=True, hide_index=True)
         
-        # Fraud rate by node
-        if len(fraud_results) > 0:
-            st.subheader("Fraud Rate by Node")
+        # Fraud rate by node (use full history)
+        if len(fraud_results_all) > 0:
+            st.subheader("Fraud Rate by Node (Percent of fraud transaction from Total)")
             
-            fraud_by_node = fraud_df.groupby('node_name').agg({
+            fraud_all_df = pd.DataFrame(fraud_results_all)
+            fraud_all_df['is_fraud'] = fraud_all_df['prediction'].apply(lambda x: x == 1)
+            
+            fraud_by_node = fraud_all_df.groupby('node_name').agg({
                 'is_fraud': ['count', 'sum']
             }).reset_index()
             
