@@ -246,6 +246,28 @@ class DatabaseHandler:
             rows = cursor.fetchall()
             return [dict(row) for row in rows]
     
+    def get_all_transactions(self, node_id: Optional[int] = None) -> List[Dict]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if node_id is not None:
+                cursor.execute("""
+                    SELECT t.*, n.name as node_name
+                    FROM transactions t
+                    LEFT JOIN fog_nodes n ON t.node_id = n.id
+                    WHERE t.node_id = ?
+                    ORDER BY t.timestamp
+                """, (node_id,))
+            else:
+                cursor.execute("""
+                    SELECT t.*, n.name as node_name
+                    FROM transactions t
+                    LEFT JOIN fog_nodes n ON t.node_id = n.id
+                    ORDER BY t.timestamp
+                """)
+            
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+    
     def get_transaction_count(self, node_id: Optional[int] = None) -> int:
         """Get total transaction count, optionally for a specific node."""
         with self.get_connection() as conn:
@@ -299,6 +321,28 @@ class DatabaseHandler:
                     ORDER BY f.timestamp DESC
                     LIMIT ?
                 """, (limit,))
+            
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+    
+    def get_all_fraud_results(self, node_id: Optional[int] = None) -> List[Dict]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if node_id is not None:
+                cursor.execute("""
+                    SELECT f.*, n.name as node_name
+                    FROM fraud_results f
+                    LEFT JOIN fog_nodes n ON f.node_id = n.id
+                    WHERE f.node_id = ?
+                    ORDER BY f.timestamp
+                """, (node_id,))
+            else:
+                cursor.execute("""
+                    SELECT f.*, n.name as node_name
+                    FROM fraud_results f
+                    LEFT JOIN fog_nodes n ON f.node_id = n.id
+                    ORDER BY f.timestamp
+                """)
             
             rows = cursor.fetchall()
             return [dict(row) for row in rows]
