@@ -2,71 +2,119 @@ import os
 import pandas as pd
 import joblib
 import paho.mqtt.client as mqtt
+import json
+import time
+import smtplib
+from dotenv import load_dotenv
+from email.mime.text import MIMEText
 
 # ---------- CONFIGURATION ----------
-MODEL_PATH = "models/best_model_random_forest.pkl"  # Chemin vers ton modèle
-DATA_PATH = "data/simulation_node_1.csv"  # Dataset à traiter
+NODE_ID = "Fog_Node_1"
+MODEL_PATH = "models/best_model_random_forest.pkl"
 SCALER_PATH = "models/scaler.pkl"
+DATA_PATH = "data/simulation_node_1.csv"
 
-MQTT_BROKER = "192.168.1.158"  # Remplace par ton broker MQTT
+MQTT_BROKER = "192.168.1.159"
 MQTT_PORT = 1883
 TOPIC_RESULTS = "fog/transactions/results"
 TOPIC_RAW = "fog/transactions/raw"
 
-# ---------- FONCTIONS ----------
+# Charger le fichier .env
+load_dotenv()
+
+# --- CONFIG EMAIL ---
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
+RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
+
+
+# ---------- FONCTION ENVOI EMAIL ----------
+def send_email(subject, message):
+    """Envoie un email via SMTP."""
+    try:
+        msg = MIMEText(message)
+        msg["Subject"] = subject
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = RECEIVER_EMAIL
+
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        server.quit()
+
+        print("📧 Email sent successfully!")
+
+    except Exception as e:
+        print("❌ Failed to send email:", e)
+
+
+# ---------- FONCTIONS MQTT ----------
 def load_model(path):
-    """Charge le modèle depuis un fichier .pkl"""
     return joblib.load(path)
 
 def connect_mqtt(broker, port):
-    """Connecte le client MQTT"""
-    client = mqtt.Client("123")
+    client = mqtt.Client(NODE_ID)
     client.connect(broker, port)
     return client
 
 def publish(client, topic, message):
-    """Publie un message sur un topic MQTT"""
-    client.publish(topic, message)
+    client.publish(topic, json.dumps(message))
 
+
+# ---------- MAIN ----------
 def main():
-    # Charger le modèle
     model = load_model(MODEL_PATH)
-    print(f"Model loaded from {MODEL_PATH}")
-
-    # Charger le dataset
-    df = pd.read_csv(DATA_PATH)
-    print(f"Dataset loaded from {DATA_PATH}, shape: {df.shape}")
-
-    # Connecter le client MQTT
-    mqtt_client = connect_mqtt(MQTT_BROKER, MQTT_PORT)
-    print(f"Connected to MQTT broker {MQTT_BROKER}:{MQTT_PORT}")
-
-    # Publier les données brutes
-    for _, row in df.iterrows():
-        publish(mqtt_client, TOPIC_RAW, row.to_json())
-
-    # Charger le scaler
     scaler = joblib.load(SCALER_PATH)
-    print(f"Scaler loaded from {SCALER_PATH}")
+    df = pd.read_csv(DATA_PATH)
 
-    # Préparer les features pour le modèle (tout sauf "Class" et "Time")
+    mqtt_client = connect_mqtt(MQTT_BROKER, MQTT_PORT)
+
     X = df.drop(columns=["Class"])
-
-    # Appliquer le scaler
     X_scaled = scaler.transform(X)
-
-    # Prédire avec le modèle
     predictions = model.predict(X_scaled)
 
-    # Publier les résultats
-    for idx, pred in enumerate(predictions):
-        message = {"Time": int(df.iloc[idx]["Time"]), "Prediction": int(pred)}
-        publish(mqtt_client, TOPIC_RESULTS, str(message))
+    for idx, row in df.iterrows():
 
-    print("All data and predictions published to MQTT topics.")
+        # ----- Envoi des données brutes -----
+        data_row = row.drop("Class").to_dict()
+        data_row["Node_ID"] = NODE_ID
+        publish(mqtt_client, TOPIC_RAW, data_row)
 
-    # Déconnecter le client
+        # ----- Prediction -----
+        prediction = int(predictions[idx])
+        result_message = {
+            "Node_ID": NODE_ID,
+            "Time": int(row["Time"]),
+            "Prediction": prediction
+        }
+        publish(mqtt_client, TOPIC_RESULTS, result_message)
+
+        print(f"[{NODE_ID}] Sent row {idx+1} - Prediction = {prediction}")
+
+        # ----- Envoi EMAIL si fraude détectée -----
+        if prediction == 1:
+            email_subject = f"🚨 FRAUD ALERT from {NODE_ID}"
+            email_body = f"""
+Une transaction frauduleuse a été détectée !
+
+Node ID : {NODE_ID}
+Time : {int(row['Time'])}
+Transaction index : {idx}
+
+Données de la transaction :
+{json.dumps(data_row, indent=4)}
+"""
+            send_email(email_subject, email_body)
+
+        # Pause entre les lignes
+        time.sleep(1)
+
     mqtt_client.disconnect()
+    print("All data processed.")
+
 
 if __name__ == "__main__":
     main()
