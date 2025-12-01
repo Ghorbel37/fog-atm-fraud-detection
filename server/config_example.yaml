@@ -1,0 +1,40 @@
+# MQTT Fog Node Monitoring System Configuration
+# Fill in your actual values below
+
+mqtt:
+  broker:
+    host: "broker.hivemq.com"  # Replace with your MQTT broker hostname
+    port: 1883
+    username: ""  # Replace with your MQTT username
+    password: ""  # Replace with your MQTT password
+    keepalive: 60
+    
+  topics:
+    raw_data: "fog/transactions/raw"      # Topic for raw transaction data
+    fraud_results: "fog/transactions/results"  # Topic for fraud detection results
+
+database:
+  path: "fog_monitoring.db"  # SQLite database file path
+
+fog_nodes:
+  # Add your fog nodes here with their details
+  - id: 1
+    name: "Fog Node 1"
+    location: "Location A"
+    description: "Primary fog node"
+    
+  - id: 2
+    name: "Fog Node 2"
+    location: "Location B"
+    description: "Secondary fog node"
+    
+  # Add more nodes as needed:
+  # - id: 3
+  #   name: "Fog Node 3"
+  #   location: "Location C"
+  #   description: "Tertiary fog node"
+
+dashboard:
+  refresh_interval: 5  # Dashboard refresh interval in seconds
+  max_transactions_display: 100  # Maximum number of transactions to display
+  node_offline_threshold: 60  # Seconds before marking node as offline
