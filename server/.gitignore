@@ -1,0 +1,8 @@
+.venv
+data
+models
+ftp_root
+fog_monitoring.db
+test_fog_monitoring.db
+config.yaml
+__pycache__
