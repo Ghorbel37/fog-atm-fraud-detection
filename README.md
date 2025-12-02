@@ -17,18 +17,18 @@ This project implements a complete end-to-end fraud detection pipeline with fog 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         SERVER SIDE                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │  FTP Server  │  │ MQTT Broker  │  │  MQTT Subscriber     │  │
-│  │  (Port 21)   │  │  (Port 1883) │  │  (Stores to DB)      │  │
-│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
-│         │                  ▲                      │              │
-│         │                  │                      ▼              │
-│    ┌────────┐         ┌────────┐         ┌──────────────┐      │
-│    │ Models │         │ Topics │         │   SQLite DB  │      │
-│    │  Data  │         │        │         │              │      │
-│    └────────┘         └────────┘         └──────────────┘      │
-│                                                    │              │
+│                         SERVER SIDE                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  FTP Server  │  │ MQTT Broker  │  │  MQTT Subscriber     │   │
+│  │  (Port 21)   │  │  (Port 1883) │  │  (Stores to DB)      │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+│         │                  ▲                      │             │
+│         │                  │                      ▼             │
+│    ┌────────┐         ┌────────┐         ┌──────────────┐       │
+│    │ Models │         │ Topics │         │   SQLite DB  │       │
+│    │  Data  │         │        │         │              │       │
+│    └────────┘         └────────┘         └──────────────┘       │
+│                                                    │            │
 │                                           ┌──────────────────┐  │
 │                                           │  Dashboard       │  │
 │                                           │  (Streamlit)     │  │
@@ -38,7 +38,7 @@ This project implements a complete end-to-end fraud detection pipeline with fog 
                               │ MQTT Messages
                               │
         ┌─────────────────────┴─────────────────────┐
-        │                                            │
+        │                                           │
 ┌───────▼──────────┐                     ┌──────────▼─────────┐
 │  CLIENT SIDE 1   │                     │  CLIENT SIDE 2     │
 │  ┌────────────┐  │                     │  ┌────────────┐    │
