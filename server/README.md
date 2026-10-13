@@ -80,7 +80,8 @@ The training notebook evaluates multiple models:
 
 1. **FTP Server** (`src/ftp_server.py`)
    - Distributes models and simulation data to fog nodes
-   - Port: 21
+   - Users `fognode1` / `fognode2`, password from `FTP_PASSWORD` (default: `root`)
+   - Port: `FTP_PORT` (default: 21)
    - Root: `ftp_root/` directory
 
 2. **MQTT Broker**

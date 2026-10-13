@@ -8,19 +8,22 @@ import smtplib
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 
-# ---------- CONFIGURATION ----------
-NODE_ID = "Fog_Node_1"
-MODEL_PATH = "models/best_model_random_forest.pkl"
-SCALER_PATH = "models/scaler.pkl"
-DATA_PATH = "data/simulation_node_1.csv"
+# Charger le fichier .env
+load_dotenv()
 
-MQTT_BROKER = "192.168.1.159"
-MQTT_PORT = 1883
+# ---------- CONFIGURATION ----------
+# Each value can be overridden with an environment variable of the same name.
+NODE_ID = os.getenv("NODE_ID", "Fog_Node_1")
+MODEL_PATH = os.getenv("MODEL_PATH", "models/best_model_random_forest.pkl")
+SCALER_PATH = os.getenv("SCALER_PATH", "models/scaler.pkl")
+DATA_PATH = os.getenv("DATA_PATH", "data/simulation_node_1.csv")
+
+MQTT_BROKER = os.getenv("MQTT_BROKER", "192.168.1.159")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 TOPIC_RESULTS = "fog/transactions/results"
 TOPIC_RAW = "fog/transactions/raw"
 
-# Charger le fichier .env
-load_dotenv()
+SEND_INTERVAL = float(os.getenv("SEND_INTERVAL", "1"))  # seconds between rows
 
 # --- CONFIG EMAIL ---
 SMTP_SERVER = "smtp.gmail.com"
@@ -110,7 +113,7 @@ Données de la transaction :
             send_email(email_subject, email_body)
 
         # Pause entre les lignes
-        time.sleep(1)
+        time.sleep(SEND_INTERVAL)
 
     mqtt_client.disconnect()
     print("All data processed.")

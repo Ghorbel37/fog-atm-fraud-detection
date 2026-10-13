@@ -2,9 +2,10 @@ from ftplib import FTP, error_perm
 import os
 
 # ---------- CONFIGURATION ----------
-FTP_HOST = "192.168.1.158"
-FTP_USER = "fognode1"
-FTP_PASS = "root"
+# Override with the FTP_HOST, FTP_USER and FTP_PASS environment variables.
+FTP_HOST = os.getenv("FTP_HOST", "192.168.1.158")
+FTP_USER = os.getenv("FTP_USER", "fognode1")
+FTP_PASS = os.getenv("FTP_PASS", "root")
 LOCAL_ROOT = "."  # Local folder to save files
 
 # ---------- FUNCTION ----------

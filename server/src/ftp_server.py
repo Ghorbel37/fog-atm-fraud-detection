@@ -51,18 +51,20 @@ def main():
             create_symlink_or_copy(data_file_src, data_file_dst)
 
     # FTP User Setup
+    ftp_password = os.getenv("FTP_PASSWORD", "root")
+    ftp_port = int(os.getenv("FTP_PORT", "21"))
     authorizer = DummyAuthorizer()
     for node in fog_nodes:
         # restrict user to its own folder only
         home_dir = os.path.join(ftp_root, f"fognode{node}")
         authorizer.add_user(
-            f"fognode{node}", "root", home_dir, perm="elr"
+            f"fognode{node}", ftp_password, home_dir, perm="elr"
         )
 
     handler = FTPHandler
     handler.authorizer = authorizer
 
-    address = ("0.0.0.0", 21)
+    address = ("0.0.0.0", ftp_port)
     server = FTPServer(address, handler)
 
     print("FTP Server running. Each fognode has isolated access.")

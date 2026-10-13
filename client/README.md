@@ -38,20 +38,21 @@ Before running the fog node, you must download the required files from the FTP s
 
 #### Configure FTP Settings
 
-Edit the FTP configuration in [`src/download_models.py`](src/download_models.py):
+[`src/download_models.py`](src/download_models.py) reads these environment variables:
 
-```python
-FTP_HOST = "192.168.1.xxx"  # Change to your FTP server IP
-FTP_USER = "fognode1"        # Change to your FTP username
-FTP_PASS = "root"            # Change to your FTP password
-LOCAL_ROOT = "."             # Local folder to save files (current directory)
-```
+| Variable   | Default         | Description   |
+| ---------- | --------------- | ------------- |
+| `FTP_HOST` | `192.168.1.158` | FTP server IP |
+| `FTP_USER` | `fognode1`      | FTP username  |
+| `FTP_PASS` | `root`          | FTP password  |
 
 #### Run FTP Download Script
 
 ```bash
-python src/download_models.py
+FTP_HOST=192.168.1.xxx FTP_USER=fognode1 python src/download_models.py
 ```
+
+On Windows PowerShell, set each variable first (`$env:FTP_HOST="192.168.1.xxx"`), then run `python src/download_models.py`.
 
 This will download the following files to your local directory:
 - `models/best_model_random_forest.pkl` - Trained Random Forest model
@@ -62,21 +63,19 @@ This will download the following files to your local directory:
 
 ### Step 2: Configure Fog Node Settings
 
-Edit the configuration variables in [`src/fog_node.py`](src/fog_node.py):
+[`src/fog_node.py`](src/fog_node.py) reads its settings from environment variables (they can also go in the `.env` file):
 
-```python
-# ---------- NODE CONFIGURATION ----------
-NODE_ID = "Fog_Node_1"  # Change for each fog node (e.g., "Fog_Node_2", "Fog_Node_3")
-MODEL_PATH = "models/best_model_random_forest.pkl"
-SCALER_PATH = "models/scaler.pkl"
-DATA_PATH = "data/simulation_node_1.csv"  # Change to match your node
+| Variable        | Default                               | Description                          |
+| --------------- | ------------------------------------- | ------------------------------------ |
+| `NODE_ID`       | `Fog_Node_1`                          | Unique name of this fog node         |
+| `DATA_PATH`     | `data/simulation_node_1.csv`          | Simulation data for this node        |
+| `MODEL_PATH`    | `models/best_model_random_forest.pkl` | Trained model                        |
+| `SCALER_PATH`   | `models/scaler.pkl`                   | Fitted scaler                        |
+| `MQTT_BROKER`   | `192.168.1.159`                       | IP/hostname of the MQTT broker       |
+| `MQTT_PORT`     | `1883`                                | MQTT broker port                     |
+| `SEND_INTERVAL` | `1`                                   | Seconds to wait between transactions |
 
-# ---------- MQTT CONFIGURATION ----------
-MQTT_BROKER = "192.168.1.xxx"  # Change to your MQTT broker IP
-MQTT_PORT = 1883
-TOPIC_RESULTS = "fog/transactions/results"
-TOPIC_RAW = "fog/transactions/raw"
-```
+Topics are fixed: `fog/transactions/raw` and `fog/transactions/results`.
 
 **Important**: Each fog node must have a **unique** `NODE_ID` and should use its corresponding simulation data file (e.g., `simulation_node_1.csv`, `simulation_node_2.csv`).
 
@@ -107,7 +106,7 @@ RECEIVER_EMAIL = "alert-recipient@gmail.com"
 After downloading the models and configuring all settings:
 
 ```bash
-python src/fog_node.py
+NODE_ID=Fog_Node_1 DATA_PATH=data/simulation_node_1.csv MQTT_BROKER=192.168.1.xxx python src/fog_node.py
 ```
 
 ### What Happens When Running
@@ -121,7 +120,7 @@ python src/fog_node.py
    - Publishes raw transaction data to `fog/transactions/raw`
    - Publishes prediction result to `fog/transactions/results`
    - **Sends email alert** if fraud is detected (Prediction = 1)
-   - Waits 1 second before processing the next transaction
+   - Waits `SEND_INTERVAL` seconds (default 1) before processing the next transaction
 
 5. **Disconnects** after all transactions are processed
 

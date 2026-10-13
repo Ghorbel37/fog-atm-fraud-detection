@@ -198,19 +198,14 @@ pip install -r requirements.txt
 
 #### 2.2 Download Models and Data from FTP Server
 
-**Configure FTP settings** in `src/download_models.py`:
-
-```python
-FTP_HOST = "192.168.1.xxx"  # Change to your server IP
-FTP_USER = "fognode1"        # Change to your FTP username
-FTP_PASS = "root"            # Change to your FTP password
-```
-
-**Run the download script**:
+**Run the download script**, pointing it at your server with environment variables
+(defaults: `FTP_HOST=192.168.1.158`, `FTP_USER=fognode1`, `FTP_PASS=root`):
 
 ```bash
-python src/download_models.py
+FTP_HOST=192.168.1.xxx FTP_USER=fognode1 FTP_PASS=root python src/download_models.py
 ```
+
+On Windows PowerShell, set the variables first (`$env:FTP_HOST="192.168.1.xxx"`), then run `python src/download_models.py`.
 
 This downloads:
 - `models/best_model_random_forest.pkl`
@@ -219,18 +214,17 @@ This downloads:
 
 #### 2.3 Configure Fog Node
 
-Edit `src/fog_node.py` configuration:
+`src/fog_node.py` reads its settings from environment variables (they can also go in the `.env` file):
 
-```python
-# ---------- CONFIGURATION ----------
-NODE_ID = "Fog_Node_1"  # CHANGE FOR EACH NODE (Fog_Node_1, Fog_Node_2, etc.)
-MODEL_PATH = "models/best_model_random_forest.pkl"
-SCALER_PATH = "models/scaler.pkl"
-DATA_PATH = "data/simulation_node_1.csv"  # CHANGE for each node
-
-MQTT_BROKER = "192.168.1.xxx"  # CHANGE to your server IP
-MQTT_PORT = 1883
-```
+| Variable        | Default                               | Description                          |
+| --------------- | ------------------------------------- | ------------------------------------ |
+| `NODE_ID`       | `Fog_Node_1`                          | Unique name of this fog node         |
+| `DATA_PATH`     | `data/simulation_node_1.csv`          | Simulation data for this node        |
+| `MODEL_PATH`    | `models/best_model_random_forest.pkl` | Trained model                        |
+| `SCALER_PATH`   | `models/scaler.pkl`                   | Fitted scaler                        |
+| `MQTT_BROKER`   | `192.168.1.159`                       | IP/hostname of the MQTT broker       |
+| `MQTT_PORT`     | `1883`                                | MQTT broker port                     |
+| `SEND_INTERVAL` | `1`                                   | Seconds to wait between transactions |
 
 > **Important**: Each fog node must have a **unique NODE_ID** and corresponding data file.
 
@@ -255,7 +249,7 @@ RECEIVER_EMAIL = "alert-recipient@gmail.com"
 #### 2.5 Run Fog Node
 
 ```bash
-python src/fog_node.py
+NODE_ID=Fog_Node_1 DATA_PATH=data/simulation_node_1.csv MQTT_BROKER=192.168.1.xxx python src/fog_node.py
 ```
 
 **Expected output**:
@@ -372,13 +366,18 @@ Access at **http://localhost:8501**
 - `database.path` - SQLite database location
 - `fog_nodes` - List of expected fog nodes with IDs and names
 
-#### Client Side (`client/src/fog_node.py`):
+#### FTP Server (`server/src/ftp_server.py`, environment variables):
+- `FTP_PASSWORD` - Password of the `fognode1`/`fognode2` FTP users (default: `root`)
+- `FTP_PORT` - FTP port (default: 21)
+
+#### Client Side (`client/src/fog_node.py`, environment variables):
 - `NODE_ID` - **Unique identifier for each fog node**
 - `DATA_PATH` - Simulation data file path (match node ID)
 - `MQTT_BROKER` - Server IP address running MQTT broker
 - `MQTT_PORT` - MQTT broker port (default: 1883)
+- `SEND_INTERVAL` - Seconds between transactions (default: 1)
 
-#### FTP Download (`client/src/download_models.py`):
+#### FTP Download (`client/src/download_models.py`, environment variables):
 - `FTP_HOST` - Server IP address running FTP
 - `FTP_USER` - FTP username
 - `FTP_PASS` - FTP password
@@ -443,7 +442,7 @@ Access at **http://localhost:8501**
 **Model loading errors?**
 - Ensure `download_models.py` was run successfully
 - Verify `models/` directory contains `.pkl` files
-- Check file paths in `fog_node.py`
+- Check `MODEL_PATH`, `SCALER_PATH` and `DATA_PATH`
 
 ---
 
@@ -459,9 +458,9 @@ Access at **http://localhost:8501**
 
 ### For Each Fog Node
 
-6. **Client**: Configure FTP settings in `download_models.py`
+6. **Client**: Set `FTP_HOST`, `FTP_USER`, `FTP_PASS`
 7. **Client**: Run `download_models.py` to download models and data
-8. **Client**: Configure unique `NODE_ID` and `MQTT_BROKER` in `fog_node.py`
+8. **Client**: Set a unique `NODE_ID`, its `DATA_PATH` and `MQTT_BROKER`
 9. **Client**: (Optional) Configure email alerts in `.env`
 10. **Client**: Run `fog_node.py`
 
