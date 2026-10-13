@@ -132,7 +132,13 @@ pip install -r requirements-notebook.txt
 jupyter notebook notebooks/credit_card_fraud_detection_complete.ipynb
 ```
 
-This notebook will:
+Or, without Jupyter, train only the selected Random Forest with the same data split:
+
+```bash
+python src/train.py          # add --force to retrain if models/ already exists
+```
+
+The notebook will:
 - Download creditcard.csv dataset
 - Perform EDA
 - Split data into train/test/simulation sets
@@ -282,6 +288,7 @@ server/
 ├── fog_monitoring.db         # SQLite database (auto-created)
 ├── src/
 │   ├── database.py          # SQLite database handler
+│   ├── train.py             # Training script (same pipeline as the notebook)
 │   ├── mqtt_subscriber.py   # MQTT client for receiving data
 │   ├── dashboard.py         # Streamlit dashboard
 │   └── ftp_server.py        # FTP server used by the fog node the fetch the models

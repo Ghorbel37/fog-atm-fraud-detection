@@ -74,6 +74,7 @@ fog-atm-fraud-detection/
     ├── requirements.txt         # Server dependencies
     ├── requirements-notebook.txt # Extra dependencies for the notebook
     ├── src/
+    │   ├── train.py            # Script version of the training pipeline
     │   ├── ftp_server.py       # FTP server for model distribution
     │   ├── mqtt_subscriber.py  # MQTT client receiving fog node data
     │   ├── dashboard.py        # Streamlit monitoring dashboard
@@ -124,6 +125,10 @@ jupyter notebook notebooks/credit_card_fraud_detection_complete.ipynb
 - Split data into train/test/simulation sets
 - Train multiple ML models (Logistic Regression, Random Forest, XGBoost)
 - Save the best model and scaler to `models/`
+
+**Without Jupyter**: `python src/train.py` runs the same data split and trains the
+selected Random Forest directly (downloads the dataset if needed, skips if the model
+already exists; add `--force` to retrain).
 
 **Output files**:
 - `models/best_model_random_forest.pkl`
