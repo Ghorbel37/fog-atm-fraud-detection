@@ -1,0 +1,7 @@
+# Extra packages for notebooks/credit_card_fraud_detection_complete.ipynb
+-r requirements.txt
+xgboost==3.1.2
+matplotlib==3.10.7
+seaborn==0.13.2
+jupyter
+ipykernel==7.1.0
