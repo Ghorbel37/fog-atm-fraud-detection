@@ -1,22 +1,24 @@
 import os
+import shutil
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
-def create_symlink_or_copy(src, dst):
-    """Create symlink if supported, else copy file."""
-    if os.name != "nt":  # Windows does not allow symlink without admin
-        try:
-            os.symlink(src, dst)
-            return
-        except:
-            pass
-    # fallback: create a copy
+def refresh_copy(src, dst):
+    """Replace dst with a fresh copy of src (file or folder).
+
+    Copies instead of symlinks: pyftpdlib refuses to serve symlinks that
+    point outside the user's home folder, and copying on every start keeps
+    the files up to date after retraining.
+    """
+    if os.path.islink(dst) or os.path.isfile(dst):
+        os.remove(dst)
+    elif os.path.isdir(dst):
+        shutil.rmtree(dst)
+
     if os.path.isdir(src):
-        import shutil
-        shutil.copytree(src, dst, dirs_exist_ok=True)
+        shutil.copytree(src, dst)
     else:
-        import shutil
         shutil.copy2(src, dst)
 
 def main():
@@ -42,13 +44,17 @@ def main():
         os.makedirs(node_dir, exist_ok=True)
         os.makedirs(data_subdir, exist_ok=True)
 
-        # Create symlink/copy to models (shared folder)
-        if not os.path.exists(models_link):
-            create_symlink_or_copy(models_dir, models_link)
+        # Copy the models (shared folder)
+        if os.path.isdir(models_dir):
+            refresh_copy(models_dir, models_link)
+        else:
+            print(f"Warning: {models_dir} not found, no models to serve.")
 
         # Copy the correct simulation file
         if os.path.exists(data_file_src):
-            create_symlink_or_copy(data_file_src, data_file_dst)
+            refresh_copy(data_file_src, data_file_dst)
+        else:
+            print(f"Warning: {data_file_src} not found.")
 
     # FTP User Setup
     ftp_password = os.getenv("FTP_PASSWORD", "root")
