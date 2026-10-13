@@ -72,6 +72,7 @@ fog-atm-fraud-detection/
     ├── config.yaml              # Server configuration
     ├── config_example.yaml      # Configuration template
     ├── requirements.txt         # Server dependencies
+    ├── requirements-notebook.txt # Extra dependencies for the notebook
     ├── src/
     │   ├── ftp_server.py       # FTP server for model distribution
     │   ├── mqtt_subscriber.py  # MQTT client receiving fog node data
@@ -97,16 +98,23 @@ fog-atm-fraud-detection/
 
 #### 1.1 Install Dependencies
 
+Create a virtual environment in `server/` and install the dependencies into it:
+
 ```bash
 cd server
+python -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\activate         # Windows
 pip install -r requirements.txt
 ```
 
 #### 1.2 Prepare Dataset and Train Model
 
-Run the Jupyter notebook to download the dataset, perform EDA, and train models:
+Run the Jupyter notebook to download the dataset, perform EDA, and train models
+(in the same virtual environment, which gets the notebook extras):
 
 ```bash
+pip install -r requirements-notebook.txt
 jupyter notebook notebooks/credit_card_fraud_detection_complete.ipynb
 ```
 
@@ -161,7 +169,7 @@ python -c "from src.database import DatabaseHandler; db=DatabaseHandler(); print
 
 #### 1.5 Start Server Components
 
-Open **three separate terminals** and run:
+Open **three separate terminals**, activate the virtual environment in each one, and run:
 
 **Terminal 1 - FTP Server**:
 ```bash
@@ -191,8 +199,13 @@ For each fog node (edge device):
 
 #### 2.1 Install Dependencies
 
+Create a virtual environment in `client/` and install the dependencies into it:
+
 ```bash
 cd client
+python -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\activate         # Windows
 pip install -r requirements.txt
 ```
 
@@ -283,7 +296,6 @@ All data processed.
 - Logistic Regression
 - **Random Forest Classifier** **(Selected)**
 - XGBoost
-- Neural Networks
 
 **Evaluation Metrics**:
 - Precision, Recall, F1-Score

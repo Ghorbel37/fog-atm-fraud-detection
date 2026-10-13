@@ -24,9 +24,16 @@ The fog node client:
 
 ### 1. Install Dependencies
 
+Create a virtual environment in the `client/` folder and install the dependencies into it:
+
 ```bash
+python -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\activate         # Windows
 pip install -r requirements.txt
 ```
+
+Activate the virtual environment again in every new terminal before running the scripts below.
 
 ---
 

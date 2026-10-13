@@ -55,7 +55,6 @@ The training notebook evaluates multiple models:
 - Logistic Regression
 - **Random Forest Classifier** **(Selected)**
 - XGBoost
-- Neural Networks
 
 **Evaluation Metrics**:
 - Precision, Recall, F1-Score
@@ -113,9 +112,13 @@ The training notebook evaluates multiple models:
 
 ### Prerequisites
 
+All commands below are run from the `server/` folder.
+
 ```bash
-# Activate virtual environment
-.venv\Scripts\activate
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\activate         # Windows
 
 # Install dependencies
 pip install -r requirements.txt
@@ -124,7 +127,8 @@ pip install -r requirements.txt
 ### 1. Data Preparation & Model Training
 
 ```bash
-# Run Jupyter notebook for complete workflow
+# In the same virtual environment: install the notebook extras, then run the complete workflow
+pip install -r requirements-notebook.txt
 jupyter notebook notebooks/credit_card_fraud_detection_complete.ipynb
 ```
 
@@ -165,24 +169,26 @@ fog_nodes:
 ### 3. Initialize Database
 
 ```bash
-.venv\Scripts\python.exe -c "from src.database import DatabaseHandler; db=DatabaseHandler(); print('Database initialized')"
+python -c "from src.database import DatabaseHandler; db=DatabaseHandler(); print('Database initialized')"
 ```
 
 ### 4. Start Server Infrastructure
 
+Activate the virtual environment in each terminal first.
+
 **Terminal 1 - FTP Server**:
 ```bash
-.venv\Scripts\python.exe src\ftp_server.py
+python src/ftp_server.py
 ```
 
 **Terminal 2 - MQTT Subscriber**:
 ```bash
-.venv\Scripts\python.exe src\mqtt_subscriber.py
+python src/mqtt_subscriber.py
 ```
 
 **Terminal 3 - Dashboard**:
 ```bash
-streamlit run src\dashboard.py
+streamlit run src/dashboard.py
 ```
 
 Dashboard will open at `http://localhost:8501`
@@ -230,7 +236,7 @@ You can test the system with simulated data before connecting real fog nodes:
 ### Test Database Directly
 
 ```bash
-.venv\Scripts\python.exe src\database.py
+python src/database.py
 ```
 
 This creates a test database with sample data.
@@ -268,10 +274,11 @@ Access the dashboard at `http://localhost:8501`
 ## File Structure
 
 ```
-Fog Fraud detection/
+server/
 ├── config.yaml               # Configuration file (fill with your values)
-├── config_example.yaml      # Configuration template│
+├── config_example.yaml       # Configuration template
 ├── requirements.txt          # Python dependencies
+├── requirements-notebook.txt # Extra dependencies for the notebook
 ├── fog_monitoring.db         # SQLite database (auto-created)
 ├── src/
 │   ├── database.py          # SQLite database handler
@@ -321,7 +328,7 @@ Fog Fraud detection/
 
 ### Test Database Directly
 ```bash
-.venv\Scripts\python.exe src\database.py
+python src/database.py
 ```
 ---
 
