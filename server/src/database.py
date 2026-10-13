@@ -71,7 +71,7 @@ class DatabaseHandler:
                     node_string_id TEXT UNIQUE,
                     status TEXT DEFAULT 'offline',
                     last_seen TIMESTAMP,
-                    created_at TIMESTAMP DEFAULT (DATETIME(CURRENT_TIMESTAMP, '+1 hour'))
+                    created_at TIMESTAMP DEFAULT (datetime('now', 'localtime'))
                 )
             """)
             
@@ -88,7 +88,7 @@ class DatabaseHandler:
                     v21 REAL, v22 REAL, v23 REAL, v24 REAL, v25 REAL,
                     v26 REAL, v27 REAL, v28 REAL,
                     amount REAL,
-                    timestamp TIMESTAMP DEFAULT (DATETIME(CURRENT_TIMESTAMP, '+1 hour')),
+                    timestamp TIMESTAMP DEFAULT (datetime('now', 'localtime')),
                     FOREIGN KEY (node_id) REFERENCES fog_nodes(id)
                 )
             """)
@@ -101,7 +101,7 @@ class DatabaseHandler:
                     node_id INTEGER NOT NULL,
                     time REAL,
                     prediction INTEGER NOT NULL,
-                    timestamp TIMESTAMP DEFAULT (DATETIME(CURRENT_TIMESTAMP, '+1 hour')),
+                    timestamp TIMESTAMP DEFAULT (datetime('now', 'localtime')),
                     FOREIGN KEY (transaction_id) REFERENCES transactions(id),
                     FOREIGN KEY (node_id) REFERENCES fog_nodes(id)
                 )
