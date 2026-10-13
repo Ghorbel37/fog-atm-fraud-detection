@@ -31,11 +31,14 @@ SMTP_PORT = 587
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")
+EMAIL_ENABLED = all([SENDER_EMAIL, SENDER_PASSWORD, RECEIVER_EMAIL])
 
 
 # ---------- FONCTION ENVOI EMAIL ----------
 def send_email(subject, message):
     """Envoie un email via SMTP."""
+    if not EMAIL_ENABLED:
+        return
     try:
         msg = MIMEText(message)
         msg["Subject"] = subject
@@ -69,6 +72,9 @@ def publish(client, topic, message):
 
 # ---------- MAIN ----------
 def main():
+    if not EMAIL_ENABLED:
+        print("Email alerts disabled (set SENDER_EMAIL, SENDER_PASSWORD and RECEIVER_EMAIL to enable).")
+
     model = load_model(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
     df = pd.read_csv(DATA_PATH)

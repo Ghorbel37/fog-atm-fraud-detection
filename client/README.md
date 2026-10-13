@@ -95,6 +95,8 @@ SENDER_PASSWORD = "xxxx xxxx xxxx xxxx"  # Gmail App Password (not regular passw
 RECEIVER_EMAIL = "alert-recipient@gmail.com"
 ```
 
+If any of the three variables is missing, the fog node still runs and simply skips email alerts.
+
 > **Note**: For Gmail, you need to create an [App Password](https://support.google.com/accounts/answer/185833) rather than using your regular password. Enable 2-factor authentication first, then generate an app password.
 
 ---
