@@ -38,7 +38,7 @@ Before running the fog node, you must download the required files from the FTP s
 
 #### Configure FTP Settings
 
-Edit the FTP configuration in [`tests/test_FTP.py`](tests/test_FTP.py):
+Edit the FTP configuration in [`src/download_models.py`](src/download_models.py):
 
 ```python
 FTP_HOST = "192.168.1.xxx"  # Change to your FTP server IP
@@ -50,7 +50,7 @@ LOCAL_ROOT = "."             # Local folder to save files (current directory)
 #### Run FTP Download Script
 
 ```bash
-python tests/test_FTP.py
+python src/download_models.py
 ```
 
 This will download the following files to your local directory:
@@ -175,7 +175,7 @@ Published to `fog/transactions/results`:
 Before running the fog node, you can test if email alerts are working:
 
 ```bash
-python tests/test_envoi_email.py
+python scripts/send_test_email.py
 ```
 
 This will send a test email to verify your SMTP configuration.
@@ -190,10 +190,10 @@ client/
 ├── .gitignore           # Git ignore rules
 ├── requirements.txt     # Python dependencies
 ├── src/
-│   └── fog_node.py     # Main fog node application
-├── tests/
-│   ├── test_FTP.py     # FTP download script
-│   └── test_envoi_email.py  # Email test script
+│   ├── fog_node.py     # Main fog node application
+│   └── download_models.py  # FTP download script
+├── scripts/
+│   └── send_test_email.py  # Email test script
 ├── models/             # Downloaded ML models (created by FTP script)
 │   ├── best_model_random_forest.pkl
 │   └── scaler.pkl
@@ -241,7 +241,7 @@ client/
 **Problem**: `FileNotFoundError` when loading model
 
 **Solutions**:
-- Ensure you ran `test_FTP.py` to download the models
+- Ensure you ran `download_models.py` to download the models
 - Verify paths in `MODEL_PATH`, `SCALER_PATH`, and `DATA_PATH`
 - Check that `models/` and `data/` directories exist
 

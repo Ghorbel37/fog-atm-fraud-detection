@@ -60,10 +60,10 @@ fog-atm-fraud-detection/
 │   ├── .env_exemple             # Email configuration template
 │   ├── requirements.txt         # Client dependencies
 │   ├── src/
-│   │   └── fog_node.py         # Main fog node application
-│   ├── tests/
-│   │   ├── test_FTP.py         # Download models from FTP server
-│   │   └── test_envoi_email.py # Test email alerts
+│   │   ├── fog_node.py         # Main fog node application
+│   │   └── download_models.py  # Download models and data from FTP server
+│   ├── scripts/
+│   │   └── send_test_email.py  # Send a test email alert
 │   ├── models/                  # Downloaded ML models (via FTP)
 │   └── data/                    # Downloaded simulation data (via FTP)
 │
@@ -198,7 +198,7 @@ pip install -r requirements.txt
 
 #### 2.2 Download Models and Data from FTP Server
 
-**Configure FTP settings** in `tests/test_FTP.py`:
+**Configure FTP settings** in `src/download_models.py`:
 
 ```python
 FTP_HOST = "192.168.1.xxx"  # Change to your server IP
@@ -209,7 +209,7 @@ FTP_PASS = "root"            # Change to your FTP password
 **Run the download script**:
 
 ```bash
-python tests/test_FTP.py
+python src/download_models.py
 ```
 
 This downloads:
@@ -378,7 +378,7 @@ Access at **http://localhost:8501**
 - `MQTT_BROKER` - Server IP address running MQTT broker
 - `MQTT_PORT` - MQTT broker port (default: 1883)
 
-#### FTP Download (`client/tests/test_FTP.py`):
+#### FTP Download (`client/src/download_models.py`):
 - `FTP_HOST` - Server IP address running FTP
 - `FTP_USER` - FTP username
 - `FTP_PASS` - FTP password
@@ -424,7 +424,7 @@ Access at **http://localhost:8501**
 
 **FTP download fails?**
 - Verify FTP server is running on server side
-- Check `FTP_HOST`, `FTP_USER`, `FTP_PASS` in `test_FTP.py`
+- Check `FTP_HOST`, `FTP_USER`, `FTP_PASS` in `download_models.py`
 - Ensure network connectivity to server
 - Check firewall allows FTP (port 21)
 
@@ -438,10 +438,10 @@ Access at **http://localhost:8501**
 - Use Gmail App Password, not regular password
 - Verify credentials in `.env` file
 - Check SMTP settings (`smtp.gmail.com:587`)
-- Test with `python tests/test_envoi_email.py`
+- Test with `python scripts/send_test_email.py`
 
 **Model loading errors?**
-- Ensure `test_FTP.py` was run successfully
+- Ensure `download_models.py` was run successfully
 - Verify `models/` directory contains `.pkl` files
 - Check file paths in `fog_node.py`
 
@@ -459,8 +459,8 @@ Access at **http://localhost:8501**
 
 ### For Each Fog Node
 
-6. **Client**: Configure FTP settings in `test_FTP.py`
-7. **Client**: Run `test_FTP.py` to download models and data
+6. **Client**: Configure FTP settings in `download_models.py`
+7. **Client**: Run `download_models.py` to download models and data
 8. **Client**: Configure unique `NODE_ID` and `MQTT_BROKER` in `fog_node.py`
 9. **Client**: (Optional) Configure email alerts in `.env`
 10. **Client**: Run `fog_node.py`

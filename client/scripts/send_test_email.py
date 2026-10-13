@@ -34,7 +34,8 @@ def send_email(subject, message):
         print("❌ Failed to send email:", e)
 
 # ----------- TEST -----------
-send_email(
-    subject="Test d’envoi d’email (Fog Node)",
-    message="Ceci est un email de test envoyé depuis Python. 👍"
-)
+if __name__ == "__main__":
+    send_email(
+        subject="Test d’envoi d’email (Fog Node)",
+        message="Ceci est un email de test envoyé depuis Python. 👍"
+    )
