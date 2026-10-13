@@ -55,6 +55,8 @@ This project implements a complete end-to-end fraud detection pipeline with fog 
 ```
 fog-atm-fraud-detection/
 ├── README.md                     # This file - Project overview
+├── docker-compose.yml            # One-command demo (see Quick Start)
+├── docker/                       # Mosquitto and server config used by Docker
 ├── client/                       # FOG NODE (Edge devices)
 │   ├── README.md                # Client-specific setup instructions
 │   ├── .env_exemple             # Email configuration template
@@ -89,6 +91,28 @@ fog-atm-fraud-detection/
 ---
 
 ## Quick Start Guide
+
+### Run the demo with Docker
+
+With [Docker](https://docs.docker.com/get-docker/) installed, one command starts the whole system
+(MQTT broker, FTP server, MQTT subscriber, dashboard and two fog nodes):
+
+```bash
+docker compose up --build
+```
+
+Then open the dashboard at **http://localhost:8501**.
+
+- On the first run, the `train` service downloads the Kaggle dataset and trains the
+  Random Forest (`server/src/train.py`); this takes a few minutes. The model and simulation
+  data are saved in `server/models/` and `server/data/` and reused on later runs.
+- The fog nodes download the model from the FTP server, then publish one transaction per
+  second each (about 34 minutes for the 2,020 rows of each node).
+- Email alerts are disabled in Docker unless you add `SENDER_EMAIL`, `SENDER_PASSWORD` and
+  `RECEIVER_EMAIL` to the fog node services in `docker-compose.yml`.
+- Stop with `Ctrl+C`; `docker compose down -v` also deletes the dashboard database.
+
+The rest of this guide sets the system up by hand on separate machines.
 
 ### Prerequisites
 

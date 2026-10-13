@@ -1,0 +1,33 @@
+# Server configuration used by docker-compose.yml (subscriber and dashboard).
+
+mqtt:
+  broker:
+    host: "mosquitto"  # compose service name
+    port: 1883
+    username: ""
+    password: ""
+    keepalive: 60
+
+  topics:
+    raw_data: "fog/transactions/raw"
+    fraud_results: "fog/transactions/results"
+
+database:
+  path: "/db/fog_monitoring.db"  # named volume shared by subscriber and dashboard
+
+fog_nodes:
+  # Names map to the fog nodes' NODE_ID: "Fog Node 1" -> "Fog_Node_1"
+  - id: 1
+    name: "Fog Node 1"
+    location: "ATM Location A"
+    description: "Simulated ATM fog node 1"
+
+  - id: 2
+    name: "Fog Node 2"
+    location: "ATM Location B"
+    description: "Simulated ATM fog node 2"
+
+dashboard:
+  refresh_interval: 5
+  max_transactions_display: 100
+  node_offline_threshold: 60

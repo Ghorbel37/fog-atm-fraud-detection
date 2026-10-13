@@ -1,0 +1,8 @@
+.venv
+venv
+data
+models
+ftp_root
+*.db
+config.yaml
+__pycache__

@@ -1,0 +1,102 @@
+# One-command demo: MQTT broker, training, FTP server, subscriber, dashboard
+# and two fog nodes. Run `docker compose up --build` from the repository root,
+# then open http://localhost:8501.
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "1883:1883"
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Trains the model on first run (downloads the Kaggle dataset, takes a few
+  # minutes); skips if server/models already contains a trained model.
+  train:
+    build: ./server
+    command: python src/train.py
+    volumes:
+      - ./server/data:/app/data
+      - ./server/models:/app/models
+
+  ftp:
+    build: ./server
+    command: python src/ftp_server.py
+    volumes:
+      - ./server/data:/app/data:ro
+      - ./server/models:/app/models:ro
+    depends_on:
+      train:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('localhost', 21), 2)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  subscriber:
+    build: ./server
+    command: python src/mqtt_subscriber.py
+    volumes:
+      - ./docker/server-config.yaml:/app/config.yaml:ro
+      - db:/db
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: on-failure
+
+  dashboard:
+    build: ./server
+    command: streamlit run src/dashboard.py --server.address 0.0.0.0 --server.port 8501 --server.headless true
+    volumes:
+      - ./docker/server-config.yaml:/app/config.yaml:ro
+      - db:/db
+    ports:
+      - "8501:8501"
+    depends_on:
+      - subscriber
+    restart: on-failure
+
+  fog-node-1:
+    build: ./client
+    command: sh -c "python src/download_models.py && python src/fog_node.py"
+    environment:
+      NODE_ID: Fog_Node_1
+      DATA_PATH: data/simulation_node_1.csv
+      FTP_HOST: ftp
+      FTP_USER: fognode1
+      MQTT_BROKER: mosquitto
+    depends_on:
+      ftp:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+      subscriber:
+        condition: service_started
+    restart: on-failure
+
+  fog-node-2:
+    build: ./client
+    command: sh -c "python src/download_models.py && python src/fog_node.py"
+    environment:
+      NODE_ID: Fog_Node_2
+      DATA_PATH: data/simulation_node_2.csv
+      FTP_HOST: ftp
+      FTP_USER: fognode2
+      MQTT_BROKER: mosquitto
+    depends_on:
+      ftp:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+      subscriber:
+        condition: service_started
+    restart: on-failure
+
+volumes:
+  db:
