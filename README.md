@@ -2,6 +2,8 @@
 
 A distributed real-time credit card fraud detection system using fog computing architecture. The system employs machine learning models deployed at the edge (fog nodes) with centralized monitoring via MQTT and a Streamlit dashboard.
 
+![Streamlit dashboard showing the two fog nodes online](docs/images/dashboard-status.png)
+
 ## Project Overview
 
 This project implements a complete end-to-end fraud detection pipeline with fog computing:
@@ -378,6 +380,10 @@ All data processed.
 ## Dashboard Features
 
 Access at **http://localhost:8501**
+
+| Recent transactions and charts | Fraud detection results |
+| --- | --- |
+| ![Recent transactions, transaction volume and amount distribution](docs/images/dashboard-transactions.png) | ![Recent fraud detection results with a detected fraud and fraud rate by node](docs/images/dashboard-fraud.png) |
 
 **Real-time Monitoring**:
 - 🟢 Online / 🟠 Warning / 🔴 Offline / ⚪ Unknown node status
