@@ -1,5 +1,7 @@
 # Fog ATM Fraud Detection System
 
+*Built for a fog and cloud computing course (2025).*
+
 A distributed real-time credit card fraud detection system using fog computing architecture. The system employs machine learning models deployed at the edge (fog nodes) with centralized monitoring via MQTT and a Streamlit dashboard.
 
 ![Streamlit dashboard showing the two fog nodes online](docs/images/dashboard-status.png)
