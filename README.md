@@ -2,7 +2,7 @@
 
 *Built for a fog and cloud computing course (2025).*
 
-A distributed real-time credit card fraud detection system using fog computing architecture. The system employs machine learning models deployed at the edge (fog nodes) with centralized monitoring via MQTT and a Streamlit dashboard.
+A distributed real-time credit card fraud detection system built on fog computing. The fraud detection model is designed to run on the ATM itself: each ATM is a fog node that scores every transaction locally, where the card is used, and sends an email alert when it detects fraud. All ATMs report their transactions and predictions over MQTT to one central server, which stores them and shows every ATM on a single Streamlit monitoring dashboard. In this demo, two simulated ATMs replay transactions from the Kaggle dataset.
 
 ![Streamlit dashboard showing the two fog nodes online](docs/images/dashboard-status.png)
 
@@ -12,16 +12,16 @@ This project implements a complete end-to-end fraud detection pipeline with fog 
 
 1. **Data Preparation** - Download and process Kaggle credit card fraud dataset
 2. **Model Training** - Train and evaluate multiple ML models, select best performer
-3. **Model Distribution** - Deploy models to fog nodes via FTP server
-4. **Edge Processing** - Fog nodes perform fraud detection locally at edge devices
-5. **Real-time Monitoring** - Centralized dashboard tracks all transactions and fraud predictions
-6. **Alert System** - Email notifications when fraud is detected
+3. **Model Distribution** - The central server sends the trained model to every ATM (fog node) via FTP
+4. **Edge Processing** - Each ATM runs the model itself and scores every transaction locally
+5. **Real-time Monitoring** - One centralized dashboard tracks the transactions and fraud predictions of all ATMs
+6. **Alert System** - The ATM sends an email notification when it detects fraud
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         SERVER SIDE                             │
+│                         CENTRAL SERVER                          │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
 │  │  FTP Server  │  │ MQTT Broker  │  │  MQTT Subscriber     │   │
 │  │  (Port 21)   │  │  (Port 1883) │  │  (Stores to DB)      │   │
@@ -44,7 +44,7 @@ This project implements a complete end-to-end fraud detection pipeline with fog 
         ┌─────────────────────┴─────────────────────┐
         │                                           │
 ┌───────▼──────────┐                     ┌──────────▼─────────┐
-│  CLIENT SIDE 1   │                     │  CLIENT SIDE 2     │
+│ ATM 1 (fog node) │                     │  ATM 2 (fog node)  │
 │  ┌────────────┐  │                     │  ┌────────────┐    │
 │  │ Fog Node 1 │  │                     │  │ Fog Node 2 │    │
 │  │            │  │  ...                │  │            │    │

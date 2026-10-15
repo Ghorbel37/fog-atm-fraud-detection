@@ -1,6 +1,6 @@
 # Fog Node Client
 
-This is the client-side application for the Fog ATM Fraud Detection System. Each fog node acts as an edge computing device that processes credit card transactions locally using a pre-trained machine learning model and publishes results to a central MQTT broker.
+This is the client-side application for the Fog ATM Fraud Detection System. Each fog node represents an ATM: it processes the ATM's credit card transactions locally using a pre-trained machine learning model and publishes results to a central MQTT broker.
 
 ## Overview
 
